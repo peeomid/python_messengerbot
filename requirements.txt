@@ -1,0 +1,3 @@
+requests==2.11.1
+simplejson==3.8.2
+wit==4.1.0
