@@ -6,6 +6,9 @@ Try building a clearly structured chat bot for Facebook messenger using Python, 
 - https://github.com/carpedm20/fbchat
 - https://github.com/geeknam/messengerbot
 - https://github.com/davidchua/pymessenger
+- https://github.com/lins05/slackbot
+- https://github.com/skoczen/will
+- https://github.com/llimllib/limbo
 
 ## Todo
 -  Check quick replies going with attachment (https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies)

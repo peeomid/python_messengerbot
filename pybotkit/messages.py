@@ -18,7 +18,7 @@ class Message(object):
 
     @property
     def metadata(self):
-        if len(self._metadata) > 1000:
+        if self._metadata and len(self._metadata) > 1000:
             raise ValueError(
                 'Message.metadata has more than 1000 characters'
             )

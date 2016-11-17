@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 def django_verification(request, validation_token):
     from django.http import HttpResponse
@@ -12,3 +13,6 @@ def django_verification(request, validation_token):
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
+
+def convert_timestame(timestamp):
+    return datetime.datetime.utcfromtimestamp(int(timestamp)/1000)

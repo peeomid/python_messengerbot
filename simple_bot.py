@@ -10,8 +10,14 @@ from random import randint
 import env
 
 from pybotkit import MessengerClient, messages, attachments, templates, elements
+from pybotkit.event_handler import EventHandler
+from pybotkit.utils import log
 
 messenger = MessengerClient(access_token=env.PAGE_ACCESS_TOKEN)
+# messenger.add_greeting_text("Hi {{user_full_name}}, welcome to this crappy bot!")
+# messenger.add_getstarted_button('GET_STARTED')
+messenger_handler = EventHandler()
+# messenger.set_example_persistent_menu()
 
 app = Flask(__name__, static_folder='public')
 
@@ -42,33 +48,34 @@ def webhook():
     data = request.get_json()
     log(data)  # you may not want to log every incoming message in production, but it's good for testing
 
-    if data["object"] == "page":
+    # if data["object"] == "page":
 
-        for entry in data["entry"]:
-            page_id = entry["id"]
-            time_of_event = entry["time"]
+    #     for entry in data["entry"]:
+    #         page_id = entry["id"]
+    #         time_of_event = entry["time"]
 
-            for messaging_event in entry["messaging"]:
+    #         for messaging_event in entry["messaging"]:
 
-                if messaging_event.get("optin"):    # optin confirmation
-                    received_authentication(messaging_event)
+    #             if messaging_event.get("optin"):    # optin confirmation
+    #                 received_authentication(messaging_event)
 
-                elif messaging_event.get("message"):  # someone sent us a message
-                    receive_message(messaging_event)
+    #             elif messaging_event.get("message"):  # someone sent us a message
+    #                 receive_message(messaging_event)
                     
-                elif messaging_event.get("delivery"):  # delivery confirmation
-                    receive_delivery_confirmation(messaging_event)
+    #             elif messaging_event.get("delivery"):  # delivery confirmation
+    #                 receive_delivery_confirmation(messaging_event)
                 
-                elif messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
-                    receive_postback(messaging_event)
+    #             elif messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
+    #                 receive_postback(messaging_event)
 
-                elif messaging_event.get("read"):
-                    receive_message_read(messaging_event)
+    #             elif messaging_event.get("read"):
+    #                 receive_message_read(messaging_event)
 
-                elif messaging_event.get("account_linking"):
-                    receive_account_link(messaging_event)
-                else:
-                    log("Unknown event received: {event} ".format(event=messaging_event))
+    #             elif messaging_event.get("account_linking"):
+    #                 receive_account_link(messaging_event)
+    #             else:
+    #                 log("Unknown event received: {event} ".format(event=messaging_event))
+    messenger_handler.webhook_handler(data)    
 
     # // Assume all went well.
     # //
@@ -154,9 +161,9 @@ def receive_message(event):
     message = event["message"]
 
     log("Received message for user {sender_id} and page {recipient_id} at {time} with message:".format(sender_id=sender_id, recipient_id=recipient_id, time=time_of_message))
-    log(message)
+    log(message)    
 
-    is_echo = message.get("is_echo")
+    is_echo = message.get("is_echo")    
     message_id = message.get("mid")
     app_id = message.get("app_id")
     metadata = message.get("metadata")
@@ -215,7 +222,6 @@ def receive_message(event):
     elif message_attachments:
         send_text_message(sender_id, "Message with attachment received")        
 
-
 def send_image_message(recipient_id):
     '''
     Send an image using the Send API.
@@ -230,22 +236,6 @@ def send_image_message(recipient_id):
     request = messages.MessageRequest(recipient, message)
 
     messenger.send(request)
-        
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "attachment": {
-    #                 "type": "image",
-    #                 "payload": {
-    #                   "url": SERVER_URL + "/assets/rift.png"
-    #                 }
-    #               }
-    #         }
-    #     })
-
-    # call_send_API(message_data)
 
 def send_giff_message(recipient_id):
     '''
@@ -260,22 +250,6 @@ def send_giff_message(recipient_id):
 
     messenger.send(request)
 
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "attachment": {
-    #                 "type": "image",
-    #                 "payload": {
-    #                   "url": SERVER_URL + "/assets/instagram_logo.gif"
-    #                 }
-    #               }
-    #         }
-    #     })
-
-    # call_send_API(message_data)
-
 def send_audio_message(recipient_id):
     '''
     Send audio using the Send API.
@@ -288,22 +262,6 @@ def send_audio_message(recipient_id):
     request = messages.MessageRequest(recipient, message)
 
     messenger.send(request)
-
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "attachment": {
-    #                 "type": "audio",
-    #                 "payload": {
-    #                   "url": SERVER_URL + "/assets/sample.mp3"
-    #                 }
-    #               }
-    #         }
-    #     })
-
-    # call_send_API(message_data)
 
 def send_video_message(recipient_id):
     '''
@@ -318,22 +276,6 @@ def send_video_message(recipient_id):
 
     messenger.send(request)
 
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "attachment": {
-    #                 "type": "video",
-    #                 "payload": {
-    #                   "url": SERVER_URL + "/assets/allofus480.mov"
-    #                 }
-    #               }
-    #         }
-    #     })
-
-    # call_send_API(message_data)
-
 def send_file_message(recipient_id):
     '''
     Send a file using the Send API.
@@ -346,21 +288,6 @@ def send_file_message(recipient_id):
     request = messages.MessageRequest(recipient, message)
 
     messenger.send(request)
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "attachment": {
-    #                 "type": "file",
-    #                 "payload": {
-    #                   "url": SERVER_URL + "/assets/test.txt"
-    #                 }
-    #               }
-    #         }
-    #     })
-
-    # call_send_API(message_data)
 
 def send_button_message(recipient_id):
     '''
@@ -392,33 +319,6 @@ def send_button_message(recipient_id):
     request = messages.MessageRequest(recipient, message)
 
     messenger.send(request)
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "attachment": {
-    #                 "type": "template",
-    #                 "payload": {
-    #                   "template_type": "button",
-    #                   "text": "This is test text",
-    #                   "buttons":[{
-    #                     "type": "web_url",
-    #                     "url": "https://www.oculus.com/en-us/rift/",
-    #                     "title": "Open Web URL"
-    #                   }, {
-    #                     "type": "postback",
-    #                     "title": "Trigger Postback",
-    #                     "payload": "DEVELOPER_DEFINED_PAYLOAD"
-    #                   }, {
-    #                     "type": "phone_number",
-    #                     "title": "Call Phone Number",
-    #                     "payload": "+16505551234"
-    #                   }]
-    #                 }
-    #               }
-    #         }
-    #     })
 
     # call_send_API(message_data)
 
@@ -515,34 +415,6 @@ def send_quick_reply(recipient_id):
 
     messenger.send(request)
 
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "message": {
-    #             "text": "What's your favorite movie genre?",
-    #               "quick_replies": [
-    #                 {
-    #                   "content_type":"text",
-    #                   "title":"Action",
-    #                   "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
-    #                 },
-    #                 {
-    #                   "content_type":"text",
-    #                   "title":"Comedy",
-    #                   "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
-    #                 },
-    #                 {
-    #                   "content_type":"text",
-    #                   "title":"Drama",
-    #                   "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
-    #                 }
-    #               ]
-    #         }
-    #     })
-
-    # call_send_API(message_data)
-
 def send_read_receipt(recipient_id):
     '''
     Send a read receipt to indicate the message has been read
@@ -572,15 +444,6 @@ def send_typing_on(recipient_id):
 
     messenger.send(request)
 
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "sender_action": "typing_on"
-    #     })
-
-    # call_send_API(message_data)
-
 def send_typing_off(recipient_id):
     '''
     Turn typing indicator off
@@ -591,14 +454,6 @@ def send_typing_off(recipient_id):
 
     messenger.send(request)
 
-    # message_data = json.dumps({
-    #         "recipient": {
-    #             "id": recipient_id
-    #             },
-    #         "sender_action": "typing_off"
-    #     })
-
-    # call_send_API(message_data)
 
 def send_account_linking(recipient_id):
     '''
@@ -682,59 +537,55 @@ def receive_account_link(event):
 
 def send_generic_message(recipient_id):
     # Send a Structured Message (Generic Message type) using the Send API.
-    message_data = json.dumps({
-            "recipient": {
-                "id": recipient_id
-                },
-            "message": {
-              "attachment": {
-                 "type": "template",
-                 "payload": {
-                    "template_type": "generic",
-                    "elements": [
-                       {
-                          "title": "rift",
-                          "subtitle": "Next-generation virtual reality",
-                          "item_url": "https://www.oculus.com/en-us/rift/",
-                          "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
-                          "buttons": [
-                             {
-                                "type": "web_url",
-                                "url": "https://www.oculus.com/en-us/rift/",
-                                "title": "Open Web URL"
-                             },
-                             {
-                                "type": "postback",
-                                "title": "Call Postback",
-                                "payload": "Payload for first bubble"
-                             }
-                          ]
-                       },
-                       {
-                          "title": "touch",
-                          "subtitle": "Your Hands, Now in VR",
-                          "item_url": "https://www.oculus.com/en-us/touch/",
-                          "image_url": "http://messengerdemo.parseapp.com/img/touch.png",
-                          "buttons": [
-                             {
-                                "type": "web_url",
-                                "url": "https://www.oculus.com/en-us/touch/",
-                                "title": "Open Web URL"
-                             },
-                             {
-                                "type": "postback",
-                                "title": "Call Postback",
-                                "payload": "Payload for second bubble"
-                             }
-                          ]
-                       }
-                    ]
-                 }
-              }
-           }
-        })
+    recipient = messages.Recipient(recipient_id=recipient_id)
 
-    call_send_API(message_data)
+    rift_web_button = elements.WebUrlButton(
+       title='Open Web URL',
+       url='https://www.oculus.com/en-us/rift/'
+    )
+    rift_postback_button = elements.PostbackButton(
+        title='Call Postback',
+        payload='Payload for first bubble'
+    )
+    rift_element = elements.Element(
+        title='rift',
+        subtitle='Next-generation virtual reality',
+        item_url='https://www.oculus.com/en-us/rift/',
+        image_url='http://messengerdemo.parseapp.com/img/rift.png',
+        buttons=[
+            rift_web_button, rift_postback_button
+        ]
+    )
+
+    touch_web_button = elements.WebUrlButton(
+       title='Open Web URL',
+       url='https://www.oculus.com/en-us/touch/'
+    )
+    touch_postback_button = elements.PostbackButton(
+        title='Call Postback',
+        payload='Payload for second bubble'
+    )
+    touch_element = elements.Element(
+        title='touch',
+        subtitle='Your Hands, Now in VR',
+        item_url='https://www.oculus.com/en-us/touch/',
+        image_url='http://messengerdemo.parseapp.com/img/touch.png',
+        buttons=[
+            rift_web_button, rift_postback_button
+        ]
+    )
+
+    template = templates.GenericTemplate(       
+       elements=[
+           rift_element, touch_element
+       ]
+    )
+
+    attachment = attachments.TemplateAttachment(template=template)
+    message = messages.Message(attachment=attachment)
+    request = messages.MessageRequest(recipient, message)
+
+    messenger.send(request)
 
 def send_text_message(recipient_id, message_text):
     message_data = json.dumps({
@@ -765,72 +616,7 @@ def receive_postback(event):
 
     send_text_message(sender_id, "Postback called")
 
-def call_send_API(message_data):
-    '''
-    * Call the Send API. The message data goes in the body. If successful, we'll 
-    * get the message id in a response 
-    '''
-
-    params = {
-        "access_token": env.PAGE_ACCESS_TOKEN,
-        "date_format": "U"
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    try:
-        r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=message_data)
-        if r.status_code != 200:
-            log(r.status_code)
-            log(r.text)
-
-            return        
-    except Exception as e:
-        log("Unable to send message.")
-        log(e)
-        return
-
-    response_body = r.json()
-    log("response: {body}".format(body=response_body))
-    message_id = response_body.get("message_id")
-    recipient_id = response_body.get("recipient_id")
-
-    log("Successfully sent generic message with id {message_id} to recipient {recipient_id}".format(message_id=message_id, recipient_id=recipient_id))
-
-
-
-def send_message(recipient_id, message_text):
-
-    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
-
-    params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = json.dumps({
-        "recipient": {
-            "id": recipient_id
-        },
-        "message": {
-            "text": message_text
-        }
-    })
-    r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
-    if r.status_code != 200:
-        log(r.status_code)
-        log(r.text)
-
-
-def log(message):  # simple wrapper for logging to stdout on heroku
-    print str(message)
-    sys.stdout.flush()
-
-def convert_timestame(timestamp):
-    return datetime.datetime.utcfromtimestamp(int(timestamp)/1000)
-
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    messenger_handler.register_event(EventHandler.EVENT_MESSAGE, receive_message)
+    app.run(debug=True)    
